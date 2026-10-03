@@ -1,0 +1,46 @@
+<!-- 1. استدعاء مكتبة Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // 2. تهيئة الاتصال بـ Supabase
+  const SUPABASE_URL = 'ضع_رابط_المشروع_هنا';
+  const SUPABASE_ANON_KEY = 'ضع_مفتاح_anon_هنا';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 3. دالة الاستعلام عند الضغط على الزر
+  async function verifyDocument() {
+    const digitalSign = document.getElementById('digitalSignInput').value.trim();
+    const passportNo = document.getElementById('passportInput').value.trim();
+
+    if (!digitalSign || !passportNo) {
+      alert('يرجى إدخال كود المستند ورقم الجواز');
+      return;
+    }
+
+    // الاستعلام من جدول documents في Supabase
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('digital_sign', digitalSign)
+      .eq('passport_no', passportNo)
+      .single();
+
+    if (error || !data) {
+      // إظهار رسالة عدم العثور على المستند
+      document.getElementById('resultArea').innerHTML = `
+        <div style="color: red; text-align: center; margin-top: 20px;">
+          لم يتم العثور على مستند مطابقة للبيانات المدخلة.
+        </div>`;
+    } else {
+      // عرض تفاصيل المستند المترجعة من Supabase
+      document.getElementById('resultArea').innerHTML = `
+        <div style="border: 1px solid #4caf50; background: #e8f5e9; padding: 15px; margin-top: 20px; border-radius: 5px;">
+          <h3 style="color: #2e7d32;">المستند موثق ورسمي ✓</h3>
+          <p><strong>اسم الطالب:</strong> ${data.student_name}</p>
+          <p><strong>الكلية:</strong> ${data.faculty}</p>
+          <p><strong>تاريخ الإصدار:</strong> ${data.issue_date}</p>
+          <p><strong>الحالة:</strong> ${data.status}</p>
+        </div>`;
+    }
+  }
+</script>
